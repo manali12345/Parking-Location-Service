@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:image_picker/image_picker.dart';
@@ -119,8 +120,6 @@ class _iplState extends State<ipl> {
     }
 
     _locationData = await location.getLocation();
-    Toast.show(_locationData.toString(), context);
-    print(_locationData);
 
     setState(() {
       isOn = true;
@@ -157,9 +156,8 @@ class _iplState extends State<ipl> {
                 ) : SizedBox(height: 0, width: 0,)
               ),
               SizedBox(height: 15,),
-
               Container(
-                height:150,
+                height:170,
                 child: isOn ? Stack(
                   children: <Widget>[
                     FlutterMap(
@@ -180,7 +178,34 @@ class _iplState extends State<ipl> {
                              // 'pk.eyJ1IjoibW9oYW1tYWQ1NDYiLCJhIjoiY2s4eGlnNndsMDV0dDNrbm0xeXAyMGV1MiJ9.AmyJo3b5xkJaCRABSGsUYg',
                               //'id': 'mapbox.mapbox-streets-v8'
                             }),
+                        MarkerLayerOptions(
+                          markers: [
+                            new Marker(
+                              width: 80.0,
+                              height: 80.0,
+                              point: _locationData == null ? _center : LatLng(_locationData.latitude, _locationData.longitude),
+                              builder: (ctx) =>
+                              new Container(
+                                child: new Icon(Icons.location_on, color: Colors.red,),
+                              ),
+                            ),
+                          ],
+                        ),
                       ]),
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Align(
+                          alignment: Alignment.topRight,
+                          child: ClipRRect(
+                              borderRadius: BorderRadius.circular(100),
+                              child: Image(
+                                height: 50,
+                                width: 50,
+                                image: NetworkImage('https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'),
+                              )
+                          )
+                      ),
+                    ),
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: SizedBox(
