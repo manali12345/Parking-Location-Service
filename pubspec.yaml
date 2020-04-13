@@ -26,6 +26,9 @@ dependencies:
   image_picker:
   location:
   toast:
+  flutter_map:
+  latlong:
+  video_player:
 
 dev_dependencies:
   flutter_test:

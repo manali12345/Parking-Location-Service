@@ -5,22 +5,92 @@ import 'package:image_picker/image_picker.dart';
 import 'package:latlong/latlong.dart';
 import 'package:location/location.dart';
 import 'package:toast/toast.dart';
-
+import 'custom_pop.dart';
 class ipl extends StatefulWidget {
   @override
   _iplState createState() => _iplState();
 
 }
 
+// ignore: camel_case_types
 class _iplState extends State<ipl> {
   File _image ;
   LocationData _locationData;
+  LatLng _center = LatLng(40.762681, -73.832611);
 
   Future getImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.camera);
     setState(() {
       _image = image;
     });
+    var infoWindowVisible = false;
+    GlobalKey<State> key = new GlobalKey();
+    Opacity popup() {
+      return Opacity(
+        opacity: infoWindowVisible ? 1.0 : 0.0,
+        child: Container(
+          alignment: Alignment.bottomCenter,
+          width: 279.0,
+          height: 256.0,
+          decoration: BoxDecoration(
+              image: DecorationImage(
+                  image: AssetImage("assets/images/ic_info_window.png"),
+                  fit: BoxFit.cover)),
+          child: CustomPopup(key: key),
+        ),
+      );
+    }
+
+    Opacity marker() {
+      return Opacity(
+        child: Container(
+            alignment: Alignment.bottomCenter,
+            child: Image.asset(
+              'assets/images/ic_marker.png',
+              width: 49,
+              height: 65,
+            )),
+        opacity: infoWindowVisible ? 0.0 : 1.0,
+      );
+    }
+    Stack _buildCustomMarker() {
+      return Stack(
+        children: <Widget>[popup(), marker()],
+      );
+    }
+    List<Marker> _buildMarkersOnMap() {
+      List<Marker> markers = List<Marker>();
+      var marker = new Marker(
+        point: _center,
+        width: 279.0,
+        height: 256.0,
+        builder: (context) => GestureDetector(
+            onTap: () {
+              setState(() {
+                if (key.currentState != null &&
+                    (key.currentState as CustomPopupState).controller != null &&
+                    (key.currentState as CustomPopupState).controller.value !=
+                        null &&
+                    (key.currentState as CustomPopupState)
+                        .controller
+                        .value
+                        .isPlaying) {
+                  (key.currentState as CustomPopupState).controller.pause();
+                  (key.currentState as CustomPopupState).playerIcon =
+                      Icons.play_arrow;
+                }
+                infoWindowVisible = !infoWindowVisible;
+              });
+            },
+            child: _buildCustomMarker()),
+      );
+      markers.add(marker);
+
+      return markers;
+    }
+
+
+
   }
 
   Future getLocation() async {
@@ -57,7 +127,7 @@ class _iplState extends State<ipl> {
   @override
   Widget build(BuildContext context) {
     getLocation();
-    LatLng _center = LatLng(40.762681, -73.832611);
+
     return Scaffold(
 
       backgroundColor: Colors.black,
