@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:image_picker/image_picker.dart';
@@ -14,9 +15,11 @@ class ipl extends StatefulWidget {
 
 // ignore: camel_case_types
 class _iplState extends State<ipl> {
+  bool isOn = false;
   File _image ;
   LocationData _locationData;
-  LatLng _center = LatLng(40.762681, -73.832611);
+  LatLng _center = LatLng(0, 0);
+  DateTime time;
 
   Future getImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.camera);
@@ -115,18 +118,22 @@ class _iplState extends State<ipl> {
       }
     }
 
-
+    _locationData = await location.getLocation();
     Toast.show(_locationData.toString(), context);
     print(_locationData);
-    setState(() async {
-      _locationData = await location.getLocation();
+
+    setState(() {
+      isOn = true;
+      time = DateTime.now();
     });
   }
 
+  goToLocation(){}
 
   @override
   Widget build(BuildContext context) {
-    getLocation();
+    print(_locationData);
+    Random r = Random();
 
     return Scaffold(
 
@@ -138,35 +145,67 @@ class _iplState extends State<ipl> {
           child: Column(
             children: <Widget>[
               SizedBox(height: 250,),
-              Text('Parking Location Service', style: TextStyle(color: Colors.white),),
+              ListTile(
+                  leading: Text('PARKING LOCATION', style: TextStyle(color: Colors.white70, fontSize: 15),),
+                trailing: isOn ? FlatButton(
+                  child: Text('FINISH', style: TextStyle(color: Colors.blue, fontSize: 15),),
+                  onPressed: (){
+                    setState(() {
+                      isOn = false;
+                    });
+                  },
+                ) : SizedBox(height: 0, width: 0,)
+              ),
               SizedBox(height: 15,),
-              Text("Record your vehicle's parking location, making it easier to"
-                  "be found later. Mobile data and GPS must be turned on to"
-                  "mark your vehicle's location. For indoor parking, use the"
-                  "'Take Pictures' function, as indoor location recording isn't"
-                  "currently available", style: TextStyle(color: Colors.white, fontSize: 12),),
-              SizedBox(height: 10,),
+
               Container(
                 height:150,
-                child: FlutterMap(
-                    options: new MapOptions(
-                      minZoom: 15.0,
-                      center: _center,
-                      interactive: true,
-                    ),
-                    layers: [
-                      new TileLayerOptions(
-                          urlTemplate:
-                          "https://api.mapbox.com/styles/v1/loredana/cjwhjt50d005k1dplt10c8e5r/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoibG9yZWRhbmEiLCJhIjoiY2p1dXk3ZHl4MG53OTN5bWhxZjYxYzJodSJ9.TyqzGK0TjNAIDF6B5FwNyA",
-                          additionalOptions: {
-                            'accessToken':
-                            'pk.eyJ1IjoibG9yZWRhbmEiLCJhIjoiY2p1dXk3ZHl4MG53OTN5bWhxZjYxYzJodSJ9.TyqzGK0TjNAIDF6B5FwNyA',
-                            'id': 'mapbox.mapbox-streets-v8'
+                child: isOn ? Stack(
+                  children: <Widget>[
+                    FlutterMap(
+                      options: new MapOptions(
+                        minZoom: 15.0,
+                        center: _locationData == null ? _center : LatLng(_locationData.latitude, _locationData.longitude),
+                        interactive: true,
+                      ),
+                      layers: [
+                        new TileLayerOptions(
+                            urlTemplate:
+                            "https://api.mapbox.com/styles/v1/loredana/cjwhjt50d005k1dplt10c8e5r/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoibG9yZWRhbmEiLCJhIjoiY2p1dXk3ZHl4MG53OTN5bWhxZjYxYzJodSJ9.TyqzGK0TjNAIDF6B5FwNyA",
+                            additionalOptions: {
+                              'accessToken':
+                              'pk.eyJ1IjoibG9yZWRhbmEiLCJhIjoiY2p1dXk3ZHl4MG53OTN5bWhxZjYxYzJodSJ9.TyqzGK0TjNAIDF6B5FwNyA',
+                              'id': 'mapbox.mapbox-streets-v8'
 //                            'accessToken':
-                           // 'pk.eyJ1IjoibW9oYW1tYWQ1NDYiLCJhIjoiY2s4eGlnNndsMDV0dDNrbm0xeXAyMGV1MiJ9.AmyJo3b5xkJaCRABSGsUYg',
-                            //'id': 'mapbox.mapbox-streets-v8'
-                          }),
-                    ])
+                             // 'pk.eyJ1IjoibW9oYW1tYWQ1NDYiLCJhIjoiY2s4eGlnNndsMDV0dDNrbm0xeXAyMGV1MiJ9.AmyJo3b5xkJaCRABSGsUYg',
+                              //'id': 'mapbox.mapbox-streets-v8'
+                            }),
+                      ]),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: Container(
+                          color: Colors.white60,
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(100, 5, 0, 5),
+                            child: Text('Parking Duration: 0 minutes', style: TextStyle(color:  Colors.white),),
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                ) : Column(
+                      children: <Widget>[
+                        Text('Parking Location Service', style: TextStyle(color: Colors.white),),
+                        SizedBox(height: 20,),
+                        Text("Record your vehicle's parking location, making it easier to"
+                        "be found later. Mobile data and GPS must be turned on to"
+                        "mark your vehicle's location. For indoor parking, use the"
+                        "'Take Pictures' function, as indoor location recording isn't"
+                        "currently available", style: TextStyle(color: Colors.white70, fontSize: 12),),
+                      ],
+                    ),
               ),
               Row(
                 children: <Widget>[
@@ -187,14 +226,14 @@ class _iplState extends State<ipl> {
                   ),
                   Expanded(
                     child: FlatButton(
-                      onPressed: getLocation,
+                      onPressed: isOn ? goToLocation : getLocation,
                       child: Row(
                         children: <Widget>[
                           Expanded(
-                            child: Icon(Icons.my_location, color: Colors.white,),
+                            child: Icon(isOn ? Icons.navigation : Icons.my_location, color: Colors.white,),
                           ),
                           Expanded(
-                            child: Text('Mark Location', style: TextStyle(color: Colors.white),),
+                            child: Text(isOn ? 'Navigation' : 'Mark Location', style: TextStyle(color: Colors.white),),
                           )
                         ],
                       ),
