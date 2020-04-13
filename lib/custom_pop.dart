@@ -3,6 +3,7 @@ import 'package:video_player/video_player.dart';
 
 class CustomPopup extends StatefulWidget {
   static CustomPopupState of(BuildContext context) =>
+      // ignore: deprecated_member_use
       context.ancestorStateOfType(const TypeMatcher<CustomPopupState>());
 
   CustomPopup({Key key}) : super(key: key);
