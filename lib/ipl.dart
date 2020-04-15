@@ -13,7 +13,6 @@ class ipl extends StatefulWidget {
 
 }
 
-// ignore: camel_case_types
 class _iplState extends State<ipl> {
   bool isLocationOn = false;
   bool isImageOn = false;
